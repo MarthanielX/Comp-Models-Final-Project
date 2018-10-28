@@ -40,7 +40,7 @@ class AssociationMatrix:
             # Status messages; comment out if undesired
             if i % 10000 == 0:
                 printf("...{0} cue-target lines parsed...", i)
-            i++
+            i += 1
         np.sort(self.unnormed_items)
         printf("Load complete: {0} cue-target lines parsed, yielding {1} total cues", i, len(self.assocs))
     
