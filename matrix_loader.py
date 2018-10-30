@@ -50,7 +50,7 @@ class AssociationMatrix:
         self.matrix = np.zeros(tuple())
 
 def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix"):
-    '''
+    """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is 1 iff people produced target j when given cue i
     Only considers normed targets (targets that were tested as cues)
@@ -58,31 +58,85 @@ def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix")
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
     :param fileName: the name of the file to write the pickled matrix to
-    '''
+    """
     matrix = np.zeros((len(normed_list), len(normed_list)), dtype=bool)
     for i in len(normed_list):
         for target in dict[normed_list[i]]:
-            if target[2]:
+            if target[2]:  # the target was normed
                 matrix[i][normed_list.index(target[0])] = True
     file = open(fileName,'w')
     matrix.dump(file)
 
 
 def createNormedStochaticMatrix(dict, normed_list, fileName="normedStochasticMatrix"):
-    '''
+    """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
-    The i,jth entry is 1 iff people produced target j when given cue i
+    The i,jth entry is the fraction of the time people produced target j when given cue i
     Only considers normed targets (targets that were tested as cues)
     Pickles the matrix and writes it to the given file
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
     :param fileName: the name of the file to write the pickled matrix to
-    '''
+    """
     matrix = np.zeros((len(normed_list), len(normed_list)), dtype=float)
     for i in len(normed_list):
         for target in dict[normed_list[i]]:
-            if target[2]:
+            if target[2]:  # the target was normed
                 matrix[i][normed_list.index(target[0])] = target[1]
+
+    # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
+    for row in matrix:
+        sum = 0
+        for col in row:
+            sum += col
+        for col in row:
+            col = col / sum
+
+    file = open(fileName,'w')
+    matrix.dump(file)
+
+def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="fullBooleanMatrix"):
+    """
+    Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
+    The i,jth entry is 1 iff people produced target j when given cue i
+    Pickles the matrix and writes it to the given file
+    :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
+    :param normed_list: a list of the cues
+    :param unnormed_list: a list of the responses produced that were never given as cues
+    :param fileName: the name of the file to write the pickled matrix to
+    """
+    matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
+    for i in len(normed_list):
+        for target in dict[normed_list[i]]:
+            if target[2]:  # target is normed
+                matrix[i][normed_list.index(target[0])] = True
+            else:  # target not normed
+                matrix[i][len(normed_list) + unnormed_list.index(target[0])] = True
+
+    # todo: Make the rows for the un-normed cues non-zero?
+
+    file = open(fileName,'w')
+    matrix.dump(file)
+
+def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="fullStochasticMatrix"):
+    """
+    Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
+    The i,jth entry is the fraction of the time people produced target j when given cue i
+    Pickles the matrix and writes it to the given file
+    :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
+    :param normed_list: a list of the cues
+    :param unnormed_list: a list of the responses produced that were never given as cues
+    :param fileName: the name of the file to write the pickled matrix to
+    """
+    matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
+    for i in len(normed_list):
+        for target in dict[normed_list[i]]:
+            if target[2]:  # target is normed
+                matrix[i][normed_list.index(target[0])] = target[1]
+            else:  # target not normed
+                matrix[i][len(normed_list) + unnormed_list.index(target[0])] = target[1]
+
+    # todo: Make the rows for the un-normed cues non-zero?
 
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
     for row in matrix:
