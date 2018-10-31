@@ -5,68 +5,40 @@ unweighted matrices without and with unnormed targets.
 
 import numpy as np
 
-class AssociationMatrix:
-    def __init__(self):
-        '''
-        '''
-        self.assocs = dict() # dict mapping string cues to lists of tuples: (string target, float strengths, bool normed)
-        self.normed_items = [] # enumerating list of string normed words
-        self.unnormed_items = [] # enumerating list of string unnormed words
-        self.matrix = None # matrix of relations, indices match from items
-        
-    def load(self, filename):
-        '''
-        '''
-        self.assocs.clear()
-        self.items.clear()
-        assoc_file = open(filename)
-        
-        print("Loading cue-target pairs from file: '{0}'".format(filename))
-        i = 1
-        for line in assoc_file:
-            line_data = line.split(',')
-            if len(line_data) < 5:
-                print("EXCEPTION: Line {0} failed to load".format(i))
-            # Load data fields 1, 2, 3, 4 and 5 (see USF free association norms: appendix A)
-            cue, target = line_data[0].strip(), line_data[1].strip(), line_data[2].strip()
-            normed = True if normed == "YES" else False
-            fsg = float(line_data[4].strip()) / float(line_data[3].strip())
-            # Add the data into self.assocs and the lists self.normed_items and self.unnormed_items
-            self.normed_items.add(cue)
-            if not normed:
-                self.unnormed_items.add(target)
-            target_list = self.assocs.setdefault(cue, [])
-            self.assocs[cue] = target_list.add(tuple(target, fsg, normed))
-            # Status messages; comment out if undesired
-            if i % 10000 == 0:
-                print("...{0} cue-target lines parsed...".format(i))
-            i += 1
-        np.sort(self.unnormed_items)
-        print("Load complete: {0} cue-target lines parsed, yielding {1} total cues".format(i, len(self.assocs)))
+def load(filename):
+    '''
+    '''
+    assocs = dict()
+    normed_list = []
+    unnormed_list = []
+    assoc_file = open(filename)
+
+    print("Loading cue-target pairs from file: '{0}'".format(filename))
+    i = 1
+    for line in assoc_file:
+        line_data = line.split(',')
+        if len(line_data) < 5:
+            print("EXCEPTION: Line {0} failed to load".format(i))
+        # Load data fields 1, 2, 3, 4 and 5 (see USF free association norms: appendix A)
+        cue = line_data[0].strip()
+        target = line_data[1].strip()
+        normed = True if line_data[2].strip() == "YES" else False
+        fsg = int(line_data[4].strip()) / int(line_data[3].strip())
+        # Add the data into self.assocs and the lists self.normed_items and self.unnormed_items
+        if len(normed_list) == 0 or normed_list[-1] != cue: # Data should be alphabetical by cue; identical cues should be adjacent
+            normed_list.append(cue)
+        if not normed:
+            unnormed_list.append(target)
+        assocs.setdefault(cue, [])
+        assocs[cue].append((target, fsg, normed)) # assocs dict values are tuples of these 3
+        # Status messages; comment out if undesired
+        if i % 10000 == 0:
+            print("...{0} cue-target lines parsed...".format(i))
+        i += 1
+    np.sort(unnormed_list)
+    print("Load complete: {0} cue-target lines parsed, yielding {1} total cues".format(i, len(assocs)))
     
-    def init_matrix(self):
-        '''
-        '''
-        self.matrix = np.zeros(tuple())
-
-def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix"):
-    """
-    Creates an nxn matrix where n is the number of cues and writes it to the given location
-    The i,jth entry is 1 iff people produced target j when given cue i
-    Only considers normed targets (targets that were tested as cues)
-    Pickles the matrix and writes it to the given file
-    :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
-    :param normed_list: a list of the cues
-    :param fileName: the name of the file to write the pickled matrix to
-    """
-    matrix = np.zeros((len(normed_list), len(normed_list)), dtype=bool)
-    for i in len(normed_list):
-        for target in dict[normed_list[i]]:
-            if target[2]:  # the target was normed
-                matrix[i][normed_list.index(target[0])] = True
-    file = open(fileName,'w')
-    matrix.dump(file)
-
+    return assocs, normed_list, unnormed_list
 
 def createNormedStochaticMatrix(dict, normed_list, fileName="normedStochasticMatrix"):
     """
