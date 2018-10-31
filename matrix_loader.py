@@ -40,6 +40,24 @@ def load(filename):
     
     return assocs, normed_list, unnormed_list
 
+def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix"):
+    """
+    Creates an nxn matrix where n is the number of cues and writes it to the given location
+    The i,jth entry is 1 iff people produced target j when given cue i
+    Only considers normed targets (targets that were tested as cues)
+    Pickles the matrix and writes it to the given file
+    :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
+    :param normed_list: a list of the cues
+    :param fileName: the name of the file to write the pickled matrix to
+    """
+    matrix = np.zeros((len(normed_list), len(normed_list)), dtype=bool)
+    for i in len(normed_list):
+        for target in dict[normed_list[i]]:
+            if target[2]:  # the target was normed
+                matrix[i][normed_list.index(target[0])] = True
+    file = open(fileName,'w')
+    matrix.dump(file)
+    
 def createNormedStochaticMatrix(dict, normed_list, fileName="normedStochasticMatrix"):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
