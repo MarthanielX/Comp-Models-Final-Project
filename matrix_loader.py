@@ -113,7 +113,11 @@ def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="fullBool
             else:  # target not normed
                 matrix[i][len(normed_list) + unnormed_list.index(target[0])] = True
 
-    # todo: Make the rows for the un-normed cues non-zero?
+    # give unnormed cues edges to every target
+    for i in range(len(unnormed_list)):
+        for j in range(len(normed_list) + len(unnormed_list)):
+            if not i == j :  # node shouldn't have an out-edge to itself
+                matrix[len(normed_list)][j] = True
 
     file = open(fileName,'w')
     matrix.dump(file)
@@ -136,7 +140,11 @@ def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="fullS
             else:  # target not normed
                 matrix[i][len(normed_list) + unnormed_list.index(target[0])] = target[1]
 
-    # todo: Make the rows for the un-normed cues non-zero?
+    # give unnormed cues edges to every target. Weights will later be normalized to sum to 1
+    for i in range(len(unnormed_list)):
+        for j in range(len(normed_list) + len(unnormed_list)):
+            if not i == j:  # node shouldn't have an out-edge to itself
+                matrix[len(normed_list)][j] = 1
 
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
     for row in matrix:
