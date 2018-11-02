@@ -5,21 +5,40 @@ unweighted matrices without and with unnormed targets.
 
 import numpy as np
 
-def load(filename):
-    '''
-    '''
+def load(fileName):
+    """
+    Loads an input file for cue-target pairs
+    The input file must be of the format used by Nelson et al.--
+    a CSV (.txt or .csv) where every line follows the following format: 
+        CUE, TARGET, NORMED?, #G, #P, ...
+    (more beyond the ellipsis is allowed but will not be used)
+    Returns the data of the cue-target pairs in a tuple: see below
+    for details
+    :param fileName: a string directory of the data file;
+                     see http://w3.usf.edu/FreeAssociation/AppendixA/
+    :returns: tuple of len 3:
+        [0] a dictionary mapping cues to targets;
+            key is string, value is tuple of len 3:
+                [0] target as string
+                [1] forward strength as float
+                [2] normed as boolean
+        [1] a list enumerating all normed words in data;
+            sorted alphabetically A-Z
+        [2] a list enumerating all unnormed words in data;
+            sorted alphabetically A-Z
+    """
     assocs = dict()
     normed_list = []
     unnormed_list = []
-    assoc_file = open(filename)
+    assoc_file = open(fileName)
 
-    print("Loading cue-target pairs from file: '{0}'".format(filename))
+    print("Loading cue-target pairs from file: '{0}'".format(fileName))
     i = 1
     for line in assoc_file:
         line_data = line.split(',')
-        if len(line_data) < 5:
-            print("EXCEPTION: Line {0} failed to load".format(i))
-        # Load data fields 1, 2, 3, 4 and 5 (see USF free association norms: appendix A)
+        if len(line_data) < 5 or not line_data[3].strip().isdigit() or not line_data[4].strip().isdigit():
+            print("...Line {0} failed to load".format(i))
+        # Load data fields 1, 2, 3, 4 and 5 (see above; or USF free association norms: appendix A)
         cue = line_data[0].strip()
         target = line_data[1].strip()
         normed = True if line_data[2].strip() == "YES" else False
@@ -27,7 +46,7 @@ def load(filename):
         # Add the data into self.assocs and the lists self.normed_items and self.unnormed_items
         if len(normed_list) == 0 or normed_list[-1] != cue: # Data should be alphabetical by cue; identical cues should be adjacent
             normed_list.append(cue)
-        if not normed:
+        if not normed and target not in unnormed_list:
             unnormed_list.append(target)
         assocs.setdefault(cue, [])
         assocs[cue].append((target, fsg, normed)) # assocs dict values are tuples of these 3
@@ -35,12 +54,12 @@ def load(filename):
         if i % 10000 == 0:
             print("...{0} cue-target lines parsed...".format(i))
         i += 1
-    np.sort(unnormed_list)
+    unnormed_list = np.sort(unnormed_list)
     print("Load complete: {0} cue-target lines parsed, yielding {1} total cues".format(i, len(assocs)))
     
     return assocs, normed_list, unnormed_list
 
-def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix"):
+def createNormedBooleanMatrix(dict, normed_list, fileName="lib/normedBooleanMatrix.pickle"):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is 1 iff people produced target j when given cue i
@@ -58,7 +77,7 @@ def createNormedBooleanMatrix(dict, normed_list, fileName="normedBooleanMatrix")
     file = open(fileName,'w')
     matrix.dump(file)
     
-def createNormedStochaticMatrix(dict, normed_list, fileName="normedStochasticMatrix"):
+def createNormedStochaticMatrix(dict, normed_list, fileName="lib/normedStochasticMatrix.pickle"):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is the fraction of the time people produced target j when given cue i
@@ -85,7 +104,7 @@ def createNormedStochaticMatrix(dict, normed_list, fileName="normedStochasticMat
     file = open(fileName,'w')
     matrix.dump(file)
 
-def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="fullBooleanMatrix"):
+def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="lib/fullBooleanMatrix.pickle"):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
     The i,jth entry is 1 iff people produced target j when given cue i
@@ -112,7 +131,7 @@ def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="fullBool
     file = open(fileName,'w')
     matrix.dump(file)
 
-def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="fullStochasticMatrix"):
+def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/fullStochasticMatrix.pickle"):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
     The i,jth entry is the fraction of the time people produced target j when given cue i
