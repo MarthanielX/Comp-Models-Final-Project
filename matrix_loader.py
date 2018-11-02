@@ -37,7 +37,8 @@ def load(fileName):
     for line in assoc_file:
         line_data = line.split(',')
         if len(line_data) < 5 or not line_data[3].strip().isdigit() or not line_data[4].strip().isdigit():
-            print("...Line {0} failed to load".format(i))
+            print("...Line {0} failed to load...".format(i))
+            continue
         # Load data fields 1, 2, 3, 4 and 5 (see above; or USF free association norms: appendix A)
         cue = line_data[0].strip()
         target = line_data[1].strip()
