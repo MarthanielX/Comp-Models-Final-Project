@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="922a0db5-61c7-47ea-8e40-6a6174fe254a" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Nathaniel_Lab_Notebook-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Nathaniel_Lab_Notebook-checkpoint.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nathaniel_Lab_Notebook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Nathaniel_Lab_Notebook.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/._cue-target-pairs.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/matrix_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/matrix_loader.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,8 +19,11 @@
       <file leaf-file-name="matrix_loader.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/matrix_loader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="376">
-              <caret line="132" column="52" selection-start-line="132" selection-start-column="52" selection-end-line="132" selection-end-column="52" />
+            <state relative-caret-position="701">
+              <caret line="192" column="10" lean-forward="true" selection-start-line="192" selection-start-column="10" selection-end-line="192" selection-end-column="10" />
+              <folding>
+                <element signature="e#136#146#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -81,7 +84,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -113,41 +116,27 @@
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.32922733" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.35209003" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32922733" />
-      <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2793296" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1811652" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18188915" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" x="0" y="0" width="258" height="767" id="Documentation" order="4" side_tool="true" weight="0.3298217" />
-      <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.35209003" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="right" auto_hide="true" id="SciView" order="3" show_stripe_button="false" type="FLOATING" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32922733" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -157,6 +146,16 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/matrix_loader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2175">
+          <caret line="145" column="67" selection-start-line="145" selection-start-column="67" selection-end-line="145" selection-end-column="67" />
+          <folding>
+            <element signature="e#136#146#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/matrix_loader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1455">
@@ -207,8 +206,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/matrix_loader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
-          <caret line="132" column="52" selection-start-line="132" selection-start-column="52" selection-end-line="132" selection-end-column="52" />
+        <state relative-caret-position="701">
+          <caret line="192" column="10" lean-forward="true" selection-start-line="192" selection-start-column="10" selection-end-line="192" selection-end-column="10" />
+          <folding>
+            <element signature="e#136#146#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
