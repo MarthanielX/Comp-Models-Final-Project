@@ -3,19 +3,20 @@ Loads associations into memory. Can be used to create both weighted and
 unweighted matrices without and with unnormed targets.
 """
 
+import sys
 import numpy as np
 
-def load(fileName):
+def load(fileName, out=sys.stdout):
     """
     Loads an input file for cue-target pairs
     The input file must be of the format used by Nelson et al.--
-    a CSV (.txt or .csv) where every line follows the following format: 
+    a CSV (.txt or .csv) where every line follows the following format:
         CUE, TARGET, NORMED?, #G, #P, ...
     (more beyond the ellipsis is allowed but will not be used)
     Returns the data of the cue-target pairs in a tuple: see below
     for details
-    :param fileName: a string directory of the data file;
-                     see http://w3.usf.edu/FreeAssociation/AppendixA/
+    :param fileName: a string directory of the data file; see http://w3.usf.edu/FreeAssociation/AppendixA/
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: tuple of len 3:
         [0] a dictionary mapping cues to targets;
             key is string, value is tuple of len 3:
@@ -32,7 +33,7 @@ def load(fileName):
     unnormed_list = []
     assoc_file = open(fileName)
 
-    print("Loading cue-target pairs from file: '{0}'".format(fileName))
+    print("Loading cue-target pairs from file: '{0}'".format(fileName), file=out)
     i = 1
     for line in assoc_file:
         line_data = line.split(',')
@@ -51,120 +52,141 @@ def load(fileName):
             unnormed_list.append(target)
         assocs.setdefault(cue, [])
         assocs[cue].append((target, fsg, normed)) # assocs dict values are tuples of these 3
-        # Status messages; comment out if undesired
+        # Status messages for milestones
         if i % 10000 == 0:
-            print("...{0} cue-target lines parsed...".format(i))
+            print("...{0} cue-target lines parsed...".format(i), file=out)
         i += 1
-    unnormed_list = np.sort(unnormed_list)
-    print("Load complete: {0} cue-target lines parsed, yielding {1} total cues".format(i, len(assocs)))
+    unnormed_list.sort()
+    print("Load complete: {0} cue-target lines parsed, yielding {1} total cues".format(i, len(assocs)), file=out)
     
     return assocs, normed_list, unnormed_list
 
-def createNormedBooleanMatrix(dict, normed_list, fileName="lib/normedBooleanMatrix.pickle"):
+def createNormedBooleanMatrix(dict, normed_list, fileName="lib/normedBooleanMatrix.pickle", out=sys.stdout):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is 1 iff people produced target j when given cue i
     Only considers normed targets (targets that were tested as cues)
-    Pickles the matrix and writes it to the given file
+    Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
-    :param fileName: the name of the file to write the pickled matrix to
+    :param fileName: the name of the file to write the pickled matrix to; has default
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
+    :returns: the name of the file holding the pickle (see param fileName)
     """
+    print("Generating closed boolean association matrix", file=out)
     matrix = np.zeros((len(normed_list), len(normed_list)), dtype=bool)
-    for i in len(normed_list):
+    print("...Creating out-links for normed items...")
+    for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # the target was normed
                 matrix[i][normed_list.index(target[0])] = True
-    file = open(fileName,'w')
-    matrix.dump(file)
+    print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
+    matrix.dump(fileName)
+    # return name of pickle file; mostly for if default was used
+    return fileName
     
-def createNormedStochaticMatrix(dict, normed_list, fileName="lib/normedStochasticMatrix.pickle"):
+def createNormedStochasticMatrix(dict, normed_list, fileName="lib/normedStochasticMatrix.pickle", out=sys.stdout):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is the fraction of the time people produced target j when given cue i
     Only considers normed targets (targets that were tested as cues)
-    Pickles the matrix and writes it to the given file
+    Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
-    :param fileName: the name of the file to write the pickled matrix to
+    :param fileName: the name of the file to write the pickled matrix to; has default
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
+    :returns: the name of the file holding the pickle (see param fileName)
     """
+    print("Generating closed stochastic association matrix", file=out)
     matrix = np.zeros((len(normed_list), len(normed_list)), dtype=float)
-    for i in len(normed_list):
+    print("...Creating out-links for normed items...")
+    for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # the target was normed
                 matrix[i][normed_list.index(target[0])] = target[1]
-
+    print("...Weighting out-links for all items...", file=out)
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
     for row in matrix:
-        sum = 0
+        total = sum(row)
+        if total == 0.:
+            total = 1. # control for division by 0
         for col in row:
-            sum += col
-        for col in row:
-            col = col / sum
+            col /= total
+    print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
+    matrix.dump(fileName)
+    # return name of pickle file; mostly for if default was used
+    return fileName
 
-    file = open(fileName,'w')
-    matrix.dump(file)
-
-def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="lib/fullBooleanMatrix.pickle"):
+def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="lib/fullBooleanMatrix.pickle", out=sys.stdout):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
     The i,jth entry is 1 iff people produced target j when given cue i
-    Pickles the matrix and writes it to the given file
+    Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
     :param unnormed_list: a list of the responses produced that were never given as cues
-    :param fileName: the name of the file to write the pickled matrix to
+    :param fileName: the name of the file to write the pickled matrix to; has default
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
+    :returns: the name of the file holding the pickle (see param fileName)
     """
+    print("Generating full boolean association matrix", file=out)
     matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
-    for i in len(normed_list):
+    print("...Creating out-links for normed items...", file=out)
+    for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # target is normed
                 matrix[i][normed_list.index(target[0])] = True
             else:  # target not normed
                 matrix[i][len(normed_list) + unnormed_list.index(target[0])] = True
-
+    print("...Creating out-links for unnormed items...", file=out)
     # give unnormed cues edges to every target
     for i in range(len(unnormed_list)):
         for j in range(len(normed_list) + len(unnormed_list)):
             if not i == j :  # node shouldn't have an out-edge to itself
                 matrix[len(normed_list)][j] = True
+    print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
+    matrix.dump(fileName)
+    # return name of pickle file; mostly for if default was used
+    return fileName
 
-    file = open(fileName,'w')
-    matrix.dump(file)
-
-def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/fullStochasticMatrix.pickle"):
+def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/fullStochasticMatrix.pickle", out=sys.stdout):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
     The i,jth entry is the fraction of the time people produced target j when given cue i
-    Pickles the matrix and writes it to the given file
+    Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
     :param unnormed_list: a list of the responses produced that were never given as cues
-    :param fileName: the name of the file to write the pickled matrix to
+    :param fileName: the name of the file to write the pickled matrix to; has default
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
+    :returns: the name of the file holding the pickle (see param fileName)
     """
+    print("Generating full stochastic association matrix", file=out)
     matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
-    for i in len(normed_list):
+    print("...Creating out-links for normed items...", file=out)
+    for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # target is normed
                 matrix[i][normed_list.index(target[0])] = target[1]
             else:  # target not normed
                 matrix[i][len(normed_list) + unnormed_list.index(target[0])] = target[1]
-
+    print("...Creating out-links for unnormed items...", file=out)
     # give unnormed cues edges to every target. Weights will later be normalized to sum to 1
     for i in range(len(unnormed_list)):
         for j in range(len(normed_list) + len(unnormed_list)):
             if not i == j:  # node shouldn't have an out-edge to itself
-                matrix[len(normed_list)][j] = 1
-
+                matrix[len(normed_list)][j] = 1.
+    print("...Weighting out-links for all items...", file=out)
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
     for row in matrix:
-        sum = 0
+        total = sum(row)
+        if total == 0.:
+            total = 1. # control for division by 0
         for col in row:
-            sum += col
-        for col in row:
-            col = col / sum
-
-    file = open(fileName,'w')
-    matrix.dump(file)
+            col /= total
+    print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
+    matrix.dump(fileName)
+    # return name of pickle file; mostly for if default was used
+    return fileName
 
 
