@@ -106,12 +106,12 @@ def createNormedStochasticMatrix(dict, normed_list, fileName="lib/normedStochast
                 matrix[i][normed_list.index(target[0])] = target[1]
     print("...Weighting out-links for all items...", file=out)
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
-    for row in matrix:
-        total = sum(row)
+    for i in range(len(matrix)):
+        total = sum(matrix[i])
         if total == 0.:
             total = 1. # control for division by 0
-        for col in row:
-            col /= total
+        for j in range(len(matrix)):
+            matrix[i][j] = matrix[i][j] / total
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
@@ -178,12 +178,12 @@ def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/f
                 matrix[len(normed_list)][j] = 1.
     print("...Weighting out-links for all items...", file=out)
     # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
-    for row in matrix:
-        total = sum(row)
+    for i in range(len(matrix)):
+        total = sum(matrix[i])
         if total == 0.:
             total = 1. # control for division by 0
-        for col in row:
-            col /= total
+        for j in range(len(matrix)):
+            matrix[i][j] = matrix[i][j] / total
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
