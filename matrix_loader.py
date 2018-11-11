@@ -61,10 +61,10 @@ def load(fileName, out=sys.stdout):
     
     return assocs, normed_list, unnormed_list
 
-def createNormedBooleanMatrix(dict, normed_list, fileName="lib/normedBooleanMatrix.pickle", out=sys.stdout):
+def createNormedUnweightedMatrix(dict, normed_list, fileName="lib/normedUnweightedMatrix.pickle", out=sys.stdout):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
-    The i,jth entry is 1 iff people produced target j when given cue i
+    The i,jth entry is 1./out-links iff people produced target j when given cue i
     Only considers normed targets (targets that were tested as cues)
     Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
@@ -73,19 +73,21 @@ def createNormedBooleanMatrix(dict, normed_list, fileName="lib/normedBooleanMatr
     :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: the name of the file holding the pickle (see param fileName)
     """
-    print("Generating closed boolean association matrix", file=out)
-    matrix = np.zeros((len(normed_list), len(normed_list)), dtype=bool)
+    print("Generating closed unweighted association matrix", file=out)
+    matrix = np.zeros((len(normed_list), len(normed_list)), dtype=float)
     print("...Creating out-links for normed items...")
     for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # the target was normed
-                matrix[i][normed_list.index(target[0])] = True
+                matrix[i][normed_list.index(target[0])] = 1.
+    print("...Re-weighting out-links for all items...", file=out)
+    makeStochastic(matrix)
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
     return fileName
     
-def createNormedStochasticMatrix(dict, normed_list, fileName="lib/normedStochasticMatrix.pickle", out=sys.stdout):
+def createNormedWeightedMatrix(dict, normed_list, fileName="lib/normedWeightedMatrix.pickle", out=sys.stdout):
     """
     Creates an nxn matrix where n is the number of cues and writes it to the given location
     The i,jth entry is the fraction of the time people produced target j when given cue i
@@ -97,30 +99,24 @@ def createNormedStochasticMatrix(dict, normed_list, fileName="lib/normedStochast
     :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: the name of the file holding the pickle (see param fileName)
     """
-    print("Generating closed stochastic association matrix", file=out)
+    print("Generating closed weighted association matrix", file=out)
     matrix = np.zeros((len(normed_list), len(normed_list)), dtype=float)
     print("...Creating out-links for normed items...")
     for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # the target was normed
                 matrix[i][normed_list.index(target[0])] = target[1]
-    print("...Weighting out-links for all items...", file=out)
-    # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
-    for i in range(len(matrix)):
-        total = sum(matrix[i])
-        if total == 0.:
-            total = 1. # control for division by 0
-        for j in range(len(matrix)):
-            matrix[i][j] = matrix[i][j] / total
+    print("...Re-weighting out-links for all items...", file=out)
+    makeStochastic(matrix)
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
     return fileName
 
-def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="lib/fullBooleanMatrix.pickle", out=sys.stdout):
+def createFullUnweightedMatrix(dict, normed_list, unnormed_list, fileName="lib/fullUnweightedMatrix.pickle", out=sys.stdout):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
-    The i,jth entry is 1 iff people produced target j when given cue i
+    The i,jth entry is 1./out-links iff people produced target j when given cue i
     Pickles the matrix and writes it to the given file, or a default
     :param dict: a dictionary mapping cues to 3-d tuples: the target word, the association strength, and whether the target is normed
     :param normed_list: a list of the cues
@@ -129,27 +125,23 @@ def createFullBooleanMatrix(dict, normed_list, unnormed_list, fileName="lib/full
     :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: the name of the file holding the pickle (see param fileName)
     """
-    print("Generating full boolean association matrix", file=out)
+    print("Generating full unweighted association matrix", file=out)
     matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
     print("...Creating out-links for normed items...", file=out)
     for i in range(len(normed_list)):
         for target in dict[normed_list[i]]:
             if target[2]:  # target is normed
-                matrix[i][normed_list.index(target[0])] = True
+                matrix[i][normed_list.index(target[0])] = 1.
             else:  # target not normed
-                matrix[i][len(normed_list) + unnormed_list.index(target[0])] = True
-    print("...Creating out-links for unnormed items...", file=out)
-    # give unnormed cues edges to every target
-    for i in range(len(unnormed_list)):
-        for j in range(len(normed_list) + len(unnormed_list)):
-            if not i == j :  # node shouldn't have an out-edge to itself
-                matrix[len(normed_list)][j] = True
+                matrix[i][len(normed_list) + unnormed_list.index(target[0])] = 1.
+    print("...Re-weighting out-links for all items...", file=out)
+    makeStochastic(matrix)
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
     return fileName
 
-def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/fullStochasticMatrix.pickle", out=sys.stdout):
+def createFullWeightedMatrix(dict, normed_list, unnormed_list, fileName="lib/fullWeightedMatrix.pickle", out=sys.stdout):
     """
     Creates an n+m square matrix where n and m are the length of the normed and unnormed lists
     The i,jth entry is the fraction of the time people produced target j when given cue i
@@ -161,7 +153,7 @@ def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/f
     :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: the name of the file holding the pickle (see param fileName)
     """
-    print("Generating full stochastic association matrix", file=out)
+    print("Generating full weighted association matrix", file=out)
     matrix = np.zeros((len(normed_list) + len(unnormed_list), len(normed_list) + len(unnormed_list)), dtype=float)
     print("...Creating out-links for normed items...", file=out)
     for i in range(len(normed_list)):
@@ -170,23 +162,24 @@ def createFullStochasticMatrix(dict, normed_list, unnormed_list, fileName="lib/f
                 matrix[i][normed_list.index(target[0])] = target[1]
             else:  # target not normed
                 matrix[i][len(normed_list) + unnormed_list.index(target[0])] = target[1]
-    print("...Creating out-links for unnormed items...", file=out)
-    # give unnormed cues edges to every target. Weights will later be normalized to sum to 1
-    for i in range(len(unnormed_list)):
-        for j in range(len(normed_list) + len(unnormed_list)):
-            if not i == j:  # node shouldn't have an out-edge to itself
-                matrix[len(normed_list)][j] = 1.
-    print("...Weighting out-links for all items...", file=out)
-    # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
-    for i in range(len(matrix)):
-        total = sum(matrix[i])
-        if total == 0.:
-            total = 1. # control for division by 0
-        for j in range(len(matrix)):
-            matrix[i][j] = matrix[i][j] / total
+    print("...Re-weighting out-links for all items...", file=out)
+    makeStochastic(matrix)
     print("Matrix generated: compressing to '{0}'".format(fileName), file=out)
     matrix.dump(fileName)
     # return name of pickle file; mostly for if default was used
     return fileName
 
-
+def makeStochastic(matrix):
+    """
+    Given an ndarray matrix, re-weights all items in the matrix so that each row
+    sums to 1.
+    """
+    # normalizes the entries of each row to sum to 1 to make it a stochastic matrix
+    for i in range(len(matrix)):
+        total = sum(matrix[i])
+        for j in range(len(matrix)):
+            if total == 0.: # no out-links: make fully regular out-links
+                if i != j: # node shouldn't have an out-edge to itself
+                    matrix[i][j] = 1. / (len(matrix) - 1)
+            else:
+                matrix[i][j] = matrix[i][j] / total
