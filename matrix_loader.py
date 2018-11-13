@@ -1,6 +1,10 @@
 """
 Loads associations into memory. Can be used to create both weighted and
 unweighted matrices without and with unnormed targets.
+
+WARNING: When generating matrices with large sets of data, be aware that the pickled
+files saved will be quite large (n=70000 correlates to ~1GB). This also means that when
+loaded, these matrices will occupy a considerable portion of RAM.
 """
 
 import sys
