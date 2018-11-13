@@ -1,5 +1,12 @@
 """
+A module that implements web search ranking algorithms. Each algorithm takes a (pickled) square, stochastic nparray matrix
+and uses the links therein to produce rankings. The pageRank(matrixFile, alpha, epsilon, out) method implements Google's
+PageRank using a random surfer paradigm. The hypertextInducedTopicSearch(matrixFile, alpha, epsilon, out) method
+implements the HITS algorithm, modified to be query-independent and to include randomization, so as ensure convergence.
 
+Warning: Runtime and memory usage of these algorithms gets extremely high on large sets of data. HITS in particular requires
+matrix multiplication which is O(n^3) at best. It is recommended to save results from these methods once they are executed,
+and only run the actual methods when incorporating new data.
 """
 
 import numpy as np
@@ -12,7 +19,7 @@ def pageRank(matrixFile, alpha=.85, epsilon=np.exp(-8), out=sys.stdout):
     Returns an array of PageRank importance rankings (floats) in the preserved order
     :param matrixFile: name of .pickle file storing the nparray
     :param alpha: probability that surfer will follow link, not hyperlink; default is .85, last given value by Google
-    :param weighted: whether the entries of the nparray are weighted or even; defaults to even
+    :param epsilon: threshold for power rule residual; default is exp(-8)
     :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
     :returns: 1-dimensional array of PageRank importance rankings
     """
@@ -40,6 +47,19 @@ def pageRank(matrixFile, alpha=.85, epsilon=np.exp(-8), out=sys.stdout):
     return pi[0] # pi has a 1-layer outer array for matrix multiplication; relevant array is pi[0]
 
 def hypertextInducedTopicSearch(matrixFile, xi=.85, epsilon=np.exp(-10), out=sys.stdout):
+    """
+    Evaluates all entries of a square, stochastic nparray using modified (randomized) HITS
+    Incorporates random-surfer-style randomization
+    Modified to be query-independent
+    Returns a tuple of:
+        an array of HITS authority rankings (floats) in the preserved order, and
+        an array of HITS hub rankings (floats) in the preserved order
+    :param matrixFile: name of .pickle file storing the nparray
+    :param xi: probability that surfer will follow link, not hyperlink; default is .85, last given value by Google
+    :param epsilon: threshold for power rule residual; default is exp(-8)
+    :param out: the print stream to write status messages to; defaults to sys.stdout: set to os.devnull to suppress
+    :returns: tuple of: 1-dimensional array of HITS authority rankings, 1-dimensional array of HITS hub rankings
+    """
     print("Loading matrix from '{0}'...".format(matrixFile), file=out)
     matrix = np.load(matrixFile) # currently in stochastic matrix form
     n = len(matrix) # length of side of square matrix; stored for computational intelligibility
