@@ -17,7 +17,7 @@ def loadDicts(file_name ='data/Accessiblity-Rankings.txt'):
 
     for line in file:
         line_data = line.split(',')
-        line_data[0] = line_data[0].lower()
+        line_data[0] = line_data[0].upper()
         line_data[1] = int(line_data[1])
         line_data[2] = int(line_data[2])
 
