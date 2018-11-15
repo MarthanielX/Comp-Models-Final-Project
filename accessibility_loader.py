@@ -13,7 +13,7 @@ def loadDicts(file_name ='data/Accessiblity-Rankings.txt'):
     kf_frequencies = {}
     accessibility_indices = {}
     file = open(file_name, 'r')
-    file.readline() # get rid of the header line
+    file.readline()  # get rid of the header line
 
     for line in file:
         line_data = line.split(',')
@@ -26,6 +26,7 @@ def loadDicts(file_name ='data/Accessiblity-Rankings.txt'):
         accessibility_indices[line_data[0]] = line_data[2]
 
     return kf_frequencies, accessibility_indices
+
 
 if __name__ == "__main__":
     ks_freq, accessibilty = loadDicts()
